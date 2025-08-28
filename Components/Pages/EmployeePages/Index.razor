@@ -1,0 +1,85 @@
+﻿ @page "/employees"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BlazorEmployeeCRUD.Models
+@using BlazorEmployeeCRUD.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BlazorEmployeeCRUD.Data.AppDBContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+<div>
+    <input type="number" @bind="SearchID" placeholder="Enter Id" />
+    <button class="btn btn-outline-primary" @onclick="OnSearch">Search</button>
+    <button class="btn btn-outline-secondary" @onclick="LoadAll">Reset</button>
+</div>
+
+<p>
+    <a href="employees/create">Create New</a>
+</p>
+
+@if(employees !=null && employees.Any())
+{
+<QuickGrid Class="table" TGridItem="Employee" Items="employees.AsQueryable()">
+    <PropertyColumn Property="@(employee => employee.Id)" Title="Id" />
+    <PropertyColumn Property="@(employee => employee.Name)" Title="Name" />
+    <PropertyColumn Property="@(employee => employee.Position)" Title="Position" />
+    <PropertyColumn Property="@(employee => employee.DOB)" Title="DOB" />
+
+    <TemplateColumn Context="employee">
+        <a href="@($"employees/edit?id={employee.Id}")">Edit</a> |
+        <a href="@($"employees/details?id={employee.Id}")">Details</a> |
+        <a href="@($"employees/delete?id={employee.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+}
+else
+{
+    <p>No Record found</p>
+}
+
+@code {
+    private AppDBContext context = default!;
+    private List<Employee> employees = new();
+    private int? SearchID;
+
+    protected override async Task OnInitializedAsync()
+    {
+        context = DbFactory.CreateDbContext();
+        await LoadAll();
+    }
+
+    private async Task OnSearch()
+    {
+        if (SearchID > 0)
+        {
+            // Use a new context from factory
+            await using var searchContext = DbFactory.CreateDbContext();
+
+            employees = await searchContext.Employee
+                .Where(e => e.Id == SearchID)
+                .ToListAsync();
+        }
+        else
+        {
+            employees.Clear();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadAll()
+    {
+        await using var loadContext = DbFactory.CreateDbContext();
+        employees = await loadContext.Employee.Where(e=>e.Status==true).ToListAsync();
+        StateHasChanged();
+    }
+
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
+
+
+
+

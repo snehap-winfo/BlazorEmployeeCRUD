@@ -1,0 +1,59 @@
+﻿@page "/employees/create"
+@using Microsoft.EntityFrameworkCore
+@using BlazorEmployeeCRUD.Models
+@inject IDbContextFactory<BlazorEmployeeCRUD.Data.AppDBContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Employee</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Employee" OnValidSubmit="AddEmployee" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label> 
+                <InputText id="name" @bind-Value="Employee.Name" class="form-control" /> 
+                <ValidationMessage For="() => Employee.Name" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="position" class="form-label">Position:</label> 
+                <InputText id="position" @bind-Value="Employee.Position" class="form-control" /> 
+                <ValidationMessage For="() => Employee.Position" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="dob" class="form-label">DOB:</label> 
+                <InputDate id="dob" @bind-Value="Employee.DOB" class="form-control" /> 
+                <ValidationMessage For="() => Employee.DOB" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/employees">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Employee Employee { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddEmployee()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        //Employee.DOB = Employee.DOB.ToUniversalTime();
+
+        context.Employee.Add(Employee);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/employees");
+    }
+
+    
+}
