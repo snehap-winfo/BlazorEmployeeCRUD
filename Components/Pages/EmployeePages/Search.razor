@@ -1,0 +1,25 @@
+﻿@page "/employees/search-syncfusion"
+@using Microsoft.EntityFrameworkCore
+@using BlazorEmployeeCRUD.Models
+@inject IDbContextFactory<BlazorEmployeeCRUD.Data.AppDBContext> DbFactory
+
+<PageTitle>Syncfusion Search</PageTitle>
+
+<SfGrid DataSource="@employees" AllowFiltering="true" AllowPaging="true" AllowSorting="true">
+    <GridColumns>
+        <GridColumn Field="Id" HeaderText="Id" Width="100" TextAlign="TextAlign.Center" />
+        <GridColumn Field="Name" HeaderText="Name" Width="150" />
+        <GridColumn Field="Position" HeaderText="Position" Width="150" />
+        <GridColumn Field="DOB" HeaderText="DOB" Width="150" Format="d" />
+    </GridColumns>
+</SfGrid>
+
+@code {
+    private List<Employee> employees = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context = DbFactory.CreateDbContext();
+        employees = await context.Employee.Where(e => e.Status == true).ToListAsync();
+    }
+}

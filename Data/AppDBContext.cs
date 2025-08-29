@@ -14,7 +14,7 @@ namespace BlazorEmployeeCRUD.Data
         {
         }
 
-        public DbSet<BlazorEmployeeCRUD.Models.Employee> Employee { get; set; } = default!;
+        public DbSet<Employee> Employee { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -37,6 +37,8 @@ else
                     <InputDate id="dob" @bind-Value="Employee.DOB" class="form-control" />
                     <ValidationMessage For="() => Employee.DOB" class="text-danger" />
                 </div>
+
+
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
         </div>
@@ -66,7 +68,7 @@ else
             NavigationManager.NavigateTo("notfound");
             return;
         }
-        //Employee.DOB = Employee.DOB.ToUniversalTime();
+        
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -74,6 +76,7 @@ else
     private async Task UpdateEmployee()
     {
         using var context = DbFactory.CreateDbContext();
+        Employee.Status = true;
         context.Attach(Employee!).State = EntityState.Modified;
 
         try
@@ -101,3 +104,79 @@ else
         return context.Employee.Any(e => e.Id == id);
     }
 }
+
+
+
+@* @page "/employees/edit"
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<BlazorEmployeeCRUD.Data.AppDBContext> DbFactory
+@inject NavigationManager NavigationManager
+@using BlazorEmployeeCRUD.Models
+
+<h1>Edit Employee</h1>
+
+@if (employee == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="employee" OnValidSubmit="UpdateEmployee" FormName="EditForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="mb-3">
+            <label>Name</label>
+            <InputText class="form-control" @bind-Value="employee.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label>Position</label>
+            <InputText class="form-control" @bind-Value="employee.Position" />
+        </div>
+
+        <div class="mb-3">
+            <label>DOB</label>
+            <InputDate class="form-control" @bind-Value="employee.DOB" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" href="/employees">Back</a>
+    </EditForm>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+
+    private Employee? employee{ get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var contextt = DbFactory.CreateDbContext();
+        employee ??= await contextt.Employee.FirstOrDefaultAsync(e => e.Id == Id);
+        if (employee == null) NavigationManager.NavigateTo("/employees");
+    }
+
+    private async Task UpdateEmployee()
+    {
+        if (employee == null) return;
+
+        await using var contextt = DbFactory.CreateDbContext();
+         var dbEmp = await contextt.Employee.FirstOrDefaultAsync(e => e.Id ==employee.Id);
+        if (dbEmp == null) return;
+
+        dbEmp.Name = employee.Name;
+        dbEmp.Position = employee.Position;
+        dbEmp.DOB = employee.DOB;
+        bool hasChanges = contextt.ChangeTracker.HasChanges();
+
+
+        //context.Attach(employee).State = EntityState.Modified;
+        if (hasChanges)
+        await contextt.SaveChangesAsync();
+        NavigationManager.NavigateTo("/employees");
+    }
+} *@
+

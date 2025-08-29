@@ -47,6 +47,7 @@
     private async Task AddEmployee()
     {
         using var context = DbFactory.CreateDbContext();
+        Employee.Status = true;
 
         //Employee.DOB = Employee.DOB.ToUniversalTime();
 
